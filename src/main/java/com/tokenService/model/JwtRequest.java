@@ -1,4 +1,4 @@
-package com.javainuse.model;
+package com.tokenService.model;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package com.javainuse.controller;
+package com.tokenService.controller;
 
 import java.util.Objects;
 
@@ -10,15 +10,11 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.javainuse.config.JwtTokenUtil;
-import com.javainuse.model.JwtRequest;
-import com.javainuse.model.JwtResponse;
+import com.tokenService.config.JwtTokenUtil;
+import com.tokenService.model.JwtRequest;
+import com.tokenService.model.JwtResponse;
 
 @RestController
 @CrossOrigin
@@ -58,5 +54,14 @@ public class JwtAuthenticationController {
 		} catch (BadCredentialsException e) {
 			throw new Exception("INVALID_CREDENTIALS", e);
 		}
+	}
+
+	@GetMapping("/validateToken")
+	public String validateToken(@RequestParam String token) {
+		String username = jwtTokenUtil.getUsernameFromToken(token);
+		UserDetails userDetails = jwtInMemoryUserDetailsService.loadUserByUsername(username);
+		if(jwtTokenUtil.validateToken(token, userDetails))
+			return username;
+		return null;
 	}
 }
