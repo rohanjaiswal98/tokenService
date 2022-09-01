@@ -1,5 +1,9 @@
 package com.tokenService.dao;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.tokenService.model.Views;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -9,10 +13,13 @@ import java.util.Objects;
 public class User {
 
     private @Id
-    @GeneratedValue Long id;
+    @GeneratedValue @JsonView(Views.Public.class) Long id;
+    @JsonView(Views.Public.class)
     private String username;
+
     private String password;
 
+    @JsonView(Views.Public.class)
     private String role;
 
     User() {

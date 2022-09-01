@@ -8,11 +8,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.tokenService.service.JwtUserDetailsService;
@@ -31,6 +33,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
+
+//		if(request.getRequestURL().toString().contains("authenticate")) {
+//			chain.doFilter(request, response);
+//			return;
+//		}
+
 
 		final String requestTokenHeader = request.getHeader("Authorization");
 
@@ -52,6 +60,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 		//Once we get the token validate it.
 		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+
+			String role = jwtTokenUtil.getAllClaimsFromToken(jwtToken).get("role").toString();
+
+			if ((!request.getMethod().contentEquals(HttpMethod.GET.toString())) && (!role.contentEquals("admin"))) {
+				response.setStatus(403);
+				response.getWriter().print(username + " is not authorized for " + request.getMethod() + " /users");
+				response.getWriter().flush();
+				return;
+			}
 
 			UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
 
