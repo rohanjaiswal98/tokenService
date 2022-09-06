@@ -1,13 +1,9 @@
 package com.tokenService.config;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.tokenService.service.JwtUserDetailsService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,9 +11,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.tokenService.service.JwtUserDetailsService;
-
-import io.jsonwebtoken.ExpiredJwtException;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -52,6 +50,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 		//Once we get the token validate it.
 		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+
+			String role = jwtTokenUtil.getAllClaimsFromToken(jwtToken).get("role").toString();
+
+			if ((!request.getMethod().contentEquals(HttpMethod.GET.toString())) && (!role.contentEquals("admin"))) {
+				response.setStatus(403);
+				response.getWriter().print(username + " is not authorized for " + request.getMethod() + " /users");
+				response.getWriter().flush();
+				return;
+			}
 
 			UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
 
