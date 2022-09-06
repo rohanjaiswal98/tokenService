@@ -43,7 +43,6 @@ class UserController {
     @JsonView(Views.Public.class)
     @GetMapping("/users/{id}")
     User one(@PathVariable Long id) {
-
         return repository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
@@ -70,6 +69,9 @@ class UserController {
 
     @DeleteMapping("/users/{id}")
     void deleteUser(@PathVariable Long id) {
-        repository.deleteById(id);
+        if (repository.findById(id).isPresent())
+            repository.deleteById(id);
+        else
+            throw new UserNotFoundException(id);
     }
 }
